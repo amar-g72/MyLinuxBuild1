@@ -1,0 +1,14 @@
+~bin!bash
+
+sudo apt update && sudo apt upgrade
+#ensures system is up to date
+
+ps aux|grep wpa_supplicant
+#checks for all processes with wpa supplicant
+
+wpa_cli terminate
+#terminates wpa_supplicant
+
+sudo systemctl restart NetworkManager
+#restarts network
+
