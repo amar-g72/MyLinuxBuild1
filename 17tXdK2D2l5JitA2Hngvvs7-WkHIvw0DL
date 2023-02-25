@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash
 
 sudo apt update && sudo apt upgrade
 #this is to make sure all the files are up to date
