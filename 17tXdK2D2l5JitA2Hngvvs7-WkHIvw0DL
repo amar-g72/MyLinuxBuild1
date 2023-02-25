@@ -1,0 +1,69 @@
+#! /bin/bash
+
+sudo apt update && sudo apt upgrade
+#this is to make sure all the files are up to date
+
+sudo apt install -y cockpit docker-compose docker podman 
+#installs cockpit docker-compose docker containers and podman
+
+curl -fsSL https://pkgs.tailscale.com/stable/debian/bullseye.noarmor.gpg | sudo tee /usr/share/keyrings/tailscale-archive-keyring.gpg >/dev/null
+curl -fsSL https://pkgs.tailscale.com/stable/debian/bullseye.tailscale-keyring.list | sudo tee /etc/apt/sources.list.d/tailscale.list
+sudo apt-get update
+sudo apt-get install tailscale
+sudo tailscale up
+#installs tailscale 
+
+sudo docker network create \
+  --driver=bridge \
+  --subnet=172.21.0.0/16 \
+  --gateway=172.21.0.1 \
+  -o "com.docker.network.bridge.name"="docker-apps" \
+  -o "com.docker.network.bridge.enable_ip_masquerade"="true" \
+  -o "com.docker.network.bridge.enable_icc"="true" \
+  -o "com.docker.network.driver.mtu"="1500" \
+  apps
+#creates docker network
+
+sudo iptables -t nat -A POSTROUTING -s 172.21.0.0/16 -j MASQUERADE
+#Allows access to iptables
+
+sudo docker run -d -p 0.0.0.0:8080:8080 -v ~/trilium-data:/home/node/trilium-data zadam/trilium:latest
+#creates a trilium container
+
+sudo docker run -d \
+    --name pihole \
+    --network=apps \
+    --ip=172.21.0.2 \
+    -e TZ="Europe/London" \
+    -v "/etc-pihole/:/etc/pihole/" \
+    -v "/etc-dnsmasq.d/:/etc/dnsmasq.d/" \
+    --dns=127.0.0.1 \
+    --dns=9.9.9.9 \
+    --restart=unless-stopped \
+    --hostname pi.hole \
+    -e VIRTUAL_HOST="pi.hole" \
+    -e PROXY_LOCATION="pi.hole" \
+    -e ServerIP="127.0.0.1" \
+    pihole/pihole:latest
+
+sudo $ docker run -d \
+ -v nextcloud:/var/www/html \
+ -v apps:/var/www/html/custom_apps \
+ -v config:/var/www/html/config \
+ -v data:/var/www/html/data \
+ -v theme:/var/www/html/themes/<YOUR_CUSTOM_THEME> \
+ --restart=unless-stopped \
+nextcloud
+
+$ docker run -d \
+ -v db:/var/lib/mysql \
+ -v MYSQL_DATABASE = 'Nextcloud' \
+ -v MYSQL_USER = 'Nextcloud' \
+ -v MYSQL_PASSWORD = 'Password' \
+ -v MYSQL_HOST = 'User' \
+ --restart=unless-stopped \
+ mariadb:10.5
+
+
+
+
