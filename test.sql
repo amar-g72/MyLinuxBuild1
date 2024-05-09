@@ -5,4 +5,4 @@ CREATE TABLE
     column3 notes
     )
 
-    
+
